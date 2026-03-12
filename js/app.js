@@ -327,6 +327,18 @@ async function init() {
   fillSelect("filtroNivel", uniqueValues(detalle, CONFIG.filters.nivelCol), "Todos los niveles");
 
   function updateFiltered() {
+
+  // 1. Obtener la columna de beneficio definida en CONFIG
+  const colBeneficio = CONFIG.kpiFromDetalle.beneficioCol;
+
+  // 2. Calcular el máximo (convertimos a número para asegurar la comparación)
+  const maxBeneficio = filtrado.length > 0 
+    ? Math.max(...filtrado.map(r => Number(r[colBeneficio]) || 0)) 
+    : 0;
+
+
+
+
     const estado = filtroEstado.value;
     const nivel = filtroNivel.value;
     const filtrado = applyFilters(detalle, estado, nivel);
@@ -339,6 +351,7 @@ async function init() {
     setKPI("kpiUnidades", unidades);
     setKPI("kpiBeneficioTotal", beneficio.toFixed(2));
     setKPI("kpiBeneficioMedio", num ? (beneficio / num).toFixed(2) : "0.00");
+    setKPI("kpiMaxBeneficio", maxBeneficio.toLocaleString('es-ES', { minimumFractionDigits: 2 }) + " €");
 
     if (CONFIG.debug) {
       uiMsg("info", "Filtro aplicado", `Estado="${estado || "Todos"}" | Nivel="${nivel || "Todos"}" | Filas=${num}`);
