@@ -344,11 +344,11 @@ function updateFiltered() {
     0
   );
 
+  const colBeneficio = CONFIG.kpiFromDetalle.beneficioCol;
+
   const maxBeneficio =
     filtrado.length > 0
-      ? Math.max(
-          ...filtrado.map(r => Number(r[CONFIG.kpiFromDetalle.beneficioCol] || 0))
-        )
+      ? Math.max(...filtrado.map(r => Number(r[colBeneficio]) || 0))
       : 0;
 
   setKPI("kpiRegistros", num);
@@ -371,6 +371,8 @@ function updateFiltered() {
     );
   }
 }
+
+
 
 
 
