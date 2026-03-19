@@ -326,37 +326,53 @@ async function init() {
   fillSelect("filtroEstado", uniqueValues(detalle, CONFIG.filters.estadoCol), "Todos los estados");
   fillSelect("filtroNivel", uniqueValues(detalle, CONFIG.filters.nivelCol), "Todos los niveles");
 
-  function updateFiltered() {
+function updateFiltered() {
+  const estado = filtroEstado.value;
+  const nivel = filtroNivel.value;
 
-  // 1. Obtener la columna de beneficio definida en CONFIG
-  const colBeneficio = CONFIG.kpiFromDetalle.beneficioCol;
+  const filtrado = applyFilters(detalle, estado, nivel);
 
-  // 2. Calcular el máximo (convertimos a número para asegurar la comparación)
-  const maxBeneficio = filtrado.length > 0 
-    ? Math.max(...filtrado.map(r => Number(r[colBeneficio]) || 0)) 
-    : 0;
+  const num = filtrado.length;
 
+  const unidades = filtrado.reduce(
+    (acc, r) => acc + Number(r[CONFIG.kpiFromDetalle.unidadesCol] || 0),
+    0
+  );
 
+  const beneficio = filtrado.reduce(
+    (acc, r) => acc + Number(r[CONFIG.kpiFromDetalle.beneficioCol] || 0),
+    0
+  );
 
+  const maxBeneficio =
+    filtrado.length > 0
+      ? Math.max(
+          ...filtrado.map(r => Number(r[CONFIG.kpiFromDetalle.beneficioCol] || 0))
+        )
+      : 0;
 
-    const estado = filtroEstado.value;
-    const nivel = filtroNivel.value;
-    const filtrado = applyFilters(detalle, estado, nivel);
+  setKPI("kpiRegistros", num);
+  setKPI("kpiUnidades", unidades);
+  setKPI("kpiBeneficioTotal", beneficio.toFixed(2) + " €");
+  setKPI("kpiBeneficioMedio", num ? (beneficio / num).toFixed(2) + " €" : "0.00 €");
+  setKPI(
+    "kpiMaxBeneficio",
+    maxBeneficio.toLocaleString("es-ES", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    }) + " €"
+  );
 
-    const num = filtrado.length;
-    const unidades = filtrado.reduce((acc, r) => acc + Number(r[CONFIG.kpiFromDetalle.unidadesCol] || 0), 0);
-    const beneficio = filtrado.reduce((acc, r) => acc + Number(r[CONFIG.kpiFromDetalle.beneficioCol] || 0), 0);
-
-    setKPI("kpiRegistros", num);
-    setKPI("kpiUnidades", unidades);
-    setKPI("kpiBeneficioTotal", beneficio.toFixed(2));
-    setKPI("kpiBeneficioMedio", num ? (beneficio / num).toFixed(2) : "0.00");
-    setKPI("kpiMaxBeneficio", maxBeneficio.toLocaleString('es-ES', { minimumFractionDigits: 2 }) + " €");
-
-    if (CONFIG.debug) {
-      uiMsg("info", "Filtro aplicado", `Estado="${estado || "Todos"}" | Nivel="${nivel || "Todos"}" | Filas=${num}`);
-    }
+  if (CONFIG.debug) {
+    uiMsg(
+      "info",
+      "Filtro aplicado",
+      `Estado="${estado || "Todos"}" | Nivel="${nivel || "Todos"}" | Filas=${num}`
+    );
   }
+}
+
+
 
   filtroEstado.addEventListener("change", updateFiltered);
   filtroNivel.addEventListener("change", updateFiltered);
